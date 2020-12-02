@@ -173,8 +173,13 @@ forest(new_m)
 
 # meta data
 summary(m2)
+forest(m2)
 
 # with data from portfolio 3
 summary(new_m)
+forest(new_m)
+
+
 ```
+
 
