@@ -56,8 +56,6 @@ met1 <-  escalc(measure = "SMD", n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i
 
 # creating yi and vi for own data to insert with meta data - NOT DONE
 
-#own1 <-  escalc(measure = "SMD", n1i = ID2, n2i = 105, m1i = , m2i = PITCH_F0_SZ_M, 
-    #sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = own)
 
 ```
 
@@ -143,14 +141,26 @@ met1 <- met1 %>% add_row(StudyID = 51, Specification = "",
                  Article = "Fusorali et al.",
                  SAMPLE_SIZE_HC = 116,
                  SAMPLE_SIZE_SZ = 105,
-                 TYPE_OF_TASK = "SOCIAL",
+                 TYPE_OF_TASK = NA,
                  PITCH_F0_HC_M = 160.203973638763,
                  PITCH_F0_HC_SD = 66.7811258178956,
                  PITCH_F0_SZ_M = 154.231236543277,
                  PITCH_F0_SZ_SD = 50.7700114945171,
-                 yi = 4, # The yi and vi values have not been calculated yet - just as random number
-                 vi = 2)  
+                 yi =NA, # The yi and vi values have not been calculated yet - just as random number
+                 vi = NA)  
 
+new_met <- escalc(measure = "SMD", n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i = PITCH_F0_HC_M, m2i = PITCH_F0_SZ_M, 
+    sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = met1)
+
+
+# What if we have a fixed effect?
+mm <- lmer(yi ~ 1 + TYPE_OF_TASK+ (1 | StudyID), weights = 1/vi, data=new_met, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
+summary(mm)
+
+
+#Meta-analysis optimization: 
+new_m <-rma (yi, vi, data = new_met, slab = StudyID)
+forest(new_m)
 
 
 
@@ -158,3 +168,13 @@ met1 <- met1 %>% add_row(StudyID = 51, Specification = "",
 
 
 - Now look at the output of rma() and check tau and I2
+```{r}
+#Tau and I2 - both for models without fixed effects
+
+# meta data
+summary(m2)
+
+# with data from portfolio 3
+summary(new_m)
+```
+
