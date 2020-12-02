@@ -1,0 +1,87 @@
+---
+title: "Assignment 5 - Meta-analysis of pitch in schizophrenia"
+author: "Study Group 4"
+date: "1/12/2020"
+output: html_document
+---
+nnn
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Building on the shoulders of giants: meta-analysis
+
+## Questions to be answered
+
+1. What is the current evidence for distinctive vocal patterns in schizophrenia? Report how many papers report quantitative estimates, comment on what percentage of the overall studies reviewed they represent (see PRISMA chart) your method to analyze them, the estimated effect size of the difference (mean effect size and standard error) and forest plots representing it. N.B. Only measures of pitch mean and pitch sd are required for the assignment (all the other measures have been removed from the dataset for the sake of simplicity). 
+
+2. Do the results match your own analysis from Assignment 3? If you add your results to the meta-analysis, do the estimated effect sizes change? Report the new estimates and the new forest plots.
+
+3. Assess the quality of the literature: report and comment on heterogeneity of the studies (tau, I2), on publication bias (funnel plot), and on influential studies.
+
+## Tips on the process to follow:
+
+- Download the data on all published articles analyzing voice in schizophrenia and the prisma chart as reference of all articles found and reviewed
+Data: https://www.dropbox.com/s/0l9ur0gaabr80a8/Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx?dl=0
+Prisma chart: https://www.dropbox.com/s/vbjf6ff73dv9tru/PRISMA%202009%20flow%20diagram_PP.pptx?dl=0 
+- Look through the dataset to find out which columns to use, and if there is any additional information written as comments (real world data is always messy!).
+    * Hint: PITCH_F0M and PITCH_F0SD group of variables are what you need
+- Following the procedure in the slides calculate effect size and standard error of the effect size per each study. N.B. we focus on pitch mean and pitch standard deviation.
+ . first try using lmer (to connect to what you know of mixed effects models)
+ . then use rma() (to get some juicy additional statistics)
+
+- Build a forest plot of the results (forest(model))
+ 
+- Go back to Assignment 3, add your own study to the data table, and re-run meta-analysis. Do the results change?
+
+- Now look at the output of rma() and check tau and I2
+
+```{r}
+pacman::p_load(readxl, tidyverse, metafor)
+data <- read_excel("Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx")
+```
+
+Coloumns we should use:
+PITCH_F0_HC_M
+
+PITCH_F0_HC_SD
+
+PITCH_F0_SZ_M
+
+PITCH_F0_SZ_SD
+
+In the first step we use the escalc() function to calculate effect sizes and their variance.
+
+```{r}
+
+my_data <- escalc(n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i = PITCH_F0_HC_M, m2i = PITCH_F0_SZ_M, 
+    sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = data, measure = "SMD", 
+    append = TRUE)
+```
+
+Using the effect sizes and variance we can calculate the random-effects meta-analysis. The results are stored in the object 'ma_model_1'. You can retrieve the results using the summary() function.
+
+```{r}
+ma_model_1 <- rma(yi, vi, data = my_data)
+summary(ma_model_1)
+```
+There is a lot of info in the R output above. Most importantly you can see that there is an summary effect size of -0.1628 representing differences between patients and controls. Also this difference is statistically non-significant with a p=0.2948. In order to visualize the results you can create a forest-plot using the forest() function.
+
+```{r}
+forest(ma_model_1, slab = paste(my_data$studyID, as.character(my_data$Year_publication), sep = ", "))
+```
+
+A common way to investigate potential publication bias in a meta-analysis is the funnel plot. Asymmetrical distribution indicates potential publication bias.
+
+```{r}
+funnel(ma_model_1)
+
+```
+
+We could also check if there are differences between the two tests used. First let's visualize the difference using a boxplot.
+```{r}
+
+boxplot(yi ~ Specification, data = my_data)
+```
+
