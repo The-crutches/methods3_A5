@@ -1,0 +1,160 @@
+---
+title: "Assignment 5 - Meta-analysis of pitch in schizophrenia"
+author: "Riccardo Fusaroli"
+date: "3/7/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Building on the shoulders of giants: meta-analysis
+
+## Questions to be answered
+
+1. What is the current evidence for distinctive vocal patterns in schizophrenia? Report how many papers report quantitative estimates, comment on what percentage of the overall studies reviewed they represent (see PRISMA chart) your method to analyze them, the estimated effect size of the difference (mean effect size and standard error) and forest plots representing it. N.B. Only measures of pitch mean and pitch sd are required for the assignment (all the other measures have been removed from the dataset for the sake of simplicity). 
+
+2. Do the results match your own analysis from Assignment 3? If you add your results to the meta-analysis, do the estimated effect sizes change? Report the new estimates and the new forest plots.
+
+3. Assess the quality of the literature: report and comment on heterogeneity of the studies (tau, I2), on publication bias (funnel plot), and on influential studies.
+
+## Tips on the process to follow:
+
+- Download the data on all published articles analyzing voice in schizophrenia and the prisma chart as reference of all articles found and reviewed
+Data: https://www.dropbox.com/s/0l9ur0gaabr80a8/Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx?dl=0
+Prisma chart: https://www.dropbox.com/s/vbjf6ff73dv9tru/PRISMA%202009%20flow%20diagram_PP.pptx?dl=0 
+- Look through the dataset to find out which columns to use, and if there is any additional information written as comments (real world data is always messy!).
+    * Hint: PITCH_F0M and PITCH_F0SD group of variables are what you need
+- Following the procedure in the slides calculate effect size and standard error of the effect size per each study. N.B. we focus on pitch mean and pitch standard deviation.
+ . first try using lmer (to connect to what you know of mixed effects models)
+ . then use rma() (to get some juicy additional statistics)
+ 
+```{r}
+
+library(tidyverse)
+library(metafor)
+library(readxl)
+
+meta <- read_excel("~/Uni stuff/Expmeth3/methods3_p4/Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx" )
+
+meta
+
+ 
+
+```
+
+
+```{r}
+#In the first step we use the escalc() function to calculate effect sizes and their variance.
+
+meta 
+
+
+met1 <-  escalc(measure = "SMD", n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i = PITCH_F0_HC_M, m2i = PITCH_F0_SZ_M, 
+    sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = meta)
+
+# creating yi and vi for own data to insert with meta data - NOT DONE
+
+#own1 <-  escalc(measure = "SMD", n1i = ID2, n2i = 105, m1i = , m2i = PITCH_F0_SZ_M, 
+    #sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = own)
+
+```
+
+ 
+Mixed effects implementation
+m <- lmer(yi ~ 1 + (1 | study), weights = 1/vi, data=WM_d, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
+
+Meta-analysis optimization:
+m2 <-rma (yi, vi, data = WM_d, slab = study)
+forest(m2)
+
+What if we have a fixed effect?
+m3 <- lmer(yi ~ 1 + test+ (1 | study), weights = 1/vi, data=WM_d, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
+m4 <- rma(yi, vi, mods = cbind(Language), data = data, slab=study)
+
+- Build a forest plot of the results (forest(model))
+
+```{r}
+library(lme4)
+
+# Mixed effects implementation 
+m <- lmer(yi ~ 1 + (1 | StudyID), weights = 1/vi, data= met1, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
+
+summary(m)
+
+#Meta-analysis optimization: 
+m2 <-rma (yi, vi, data = met1, slab = StudyID)
+forest(m2)
+
+# What if we have a fixed effect?
+m3 <- lmer(yi ~ 1 + TYPE_OF_TASK+ (1 | StudyID), weights = 1/vi, data=met1, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
+summary(m3)
+
+
+met1$TYPE_OF_TASK <- as.factor(met1$TYPE_OF_TASK)
+m4 <- rma(yi, vi, mods = cbind(TYPE_OF_TASK), data = met1, slab=StudyID)
+forest(m4)
+
+```
+
+
+ 
+- Go back to Assignment 3, add your own study to the data table, and re-run meta-analysis. Do the results change?
+```{r}
+own <- read_csv("~/Uni stuff/Expmeth3/methods3_A3/SchizophreniaData.csv")
+
+
+
+met1 <- met1 %>% 
+    select(c("StudyID":"Article", "SAMPLE_SIZE_HC": "SAMPLE_SIZE_SZ", "TYPE_OF_TASK", "PITCH_F0_HC_M":"PITCH_F0_SZ_SD", "yi", "vi"))
+
+data.frame(met1)
+
+
+#Make columns with mean for control
+
+
+
+control <- subset(own, Diagnosis == "Control")
+
+hc_m <- mean(control$pitch_mean)
+
+
+
+#Make columns with mean for SZ
+sz <- subset(own, Diagnosis == "Schizophrenia")
+sz_m <- mean(sz$pitch_mean)
+
+#Make columns with SD for control
+
+hc_sd <- sd(control$pitch_mean)
+
+#Make columns with SD for SZ
+
+sz_sd <- sd(sz$pitch_mean)
+
+# Add rows from own study to meta data
+
+met1 <- met1 %>% add_row(StudyID = 51, Specification = "",   
+                                      Title = "Voice patterns in schizophrenia: A systematic review and Bayesian meta-analysis",   
+                                      Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
+                                      Year_publication = 2019,
+                 Article = "Fusorali et al.",
+                 SAMPLE_SIZE_HC = 116,
+                 SAMPLE_SIZE_SZ = 105,
+                 TYPE_OF_TASK = "SOCIAL",
+                 PITCH_F0_HC_M = 160.203973638763,
+                 PITCH_F0_HC_SD = 66.7811258178956,
+                 PITCH_F0_SZ_M = 154.231236543277,
+                 PITCH_F0_SZ_SD = 50.7700114945171,
+                 yi = 4, # The yi and vi values have not been calculated yet - just as random number
+                 vi = 2)  
+
+
+
+
+```
+
+
+- Now look at the output of rma() and check tau and I2
