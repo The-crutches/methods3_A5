@@ -32,13 +32,19 @@ p_load(tidyverse, metafor, readxl)
 
 meta <- read_excel("Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx")
 
-meta <- meta %>% select(StudyID:DIAGNOSIS, PITCH_F0_HC_M, PITCH_F0_SZ_M, PITCH_F0_HC_SD, PITCH_F0_SZ_SD, -Specification)
+sub <- meta %>% select(StudyID:DIAGNOSIS, PITCH_F0_HC_M, PITCH_F0_SZ_M, PITCH_F0_HC_SD, PITCH_F0_SZ_SD, -Specification)
 
 delete.na <- function(DF, n=0) {
   DF[rowSums(is.na(DF)) <= n,]
 }
 
-meta <- delete.na(meta, 3)
+sub <- delete.na(sub, 3)
+
+meta <- meta %>% select(StudyID:DIAGNOSIS)
+
+df <- left_join(sub, meta)
+
+
 ```
 
 - Look through the dataset to find out which columns to use, and if there is any additional information written as comments (real world data is always messy!).
