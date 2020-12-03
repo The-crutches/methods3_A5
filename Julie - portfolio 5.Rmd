@@ -109,30 +109,63 @@ own <- read_csv("~/Uni stuff/Expmeth3/methods3_A3/SchizophreniaData.csv")
 met2 <- met1 %>% 
     select(c("StudyID":"Article", "SAMPLE_SIZE_HC": "SAMPLE_SIZE_SZ", "TYPE_OF_TASK", "PITCH_F0_HC_M":"PITCH_F0_SZ_SD", "yi", "vi"))
 
-data.frame(met2)
+
+###################################################################################
+
+#Make columns with mean and sd for control in study 1
 
 
-#Make columns with mean for control
+control_1 <- subset(own, Diagnosis == "Control" & Study == 1)
+
+hc1_m <- mean(control_1$pitch_mean)
+hc1_sd <- sd(control_1$pitch_mean)
+
+#Make columns with mean and sd for control in study 2
+
+control_2 <- subset(own, Diagnosis == "Control" & Study == 2)
+
+hc2_m <- mean(control_2$pitch_mean)
+hc2_sd <- sd(control_2$pitch_mean)
+
+#Make columns with mean and sd for control in study 3
+
+control_3 <- subset(own, Diagnosis == "Control" & Study == 3)
+
+hc3_m <- mean(control_3$pitch_mean)
+hc3_sd <- sd(control_3$pitch_mean)
+
+#Make columns with mean and sd for control in study 4
+
+control_4 <- subset(own, Diagnosis == "Control" & Study == 4)
+
+hc4_m <- mean(control_4$pitch_mean)
+hc4_sd <- sd(control_4$pitch_mean)
+
+############################################################################
+#Make columns with mean and sd for SZ for study 1
+
+sz_1 <- subset(own, Diagnosis == "Schizophrenia" & Study == 1)
+sz1_m <- mean(sz_1$pitch_mean)
+sz1_sd <- sd(sz_1$pitch_mean)
+
+#Make columns with mean and sd for SZ for study 2
+sz_2 <- subset(own, Diagnosis == "Schizophrenia" & Study == 2)
+sz2_m <- mean(sz_2$pitch_mean)
+sz2_sd <- sd(sz_2$pitch_mean)
 
 
+#Make columns with mean and sd for SZ for study 3
+sz_3 <- subset(own, Diagnosis == "Schizophrenia" & Study == 3)
+sz3_m <- mean(sz_3$pitch_mean)
+sz3_sd <- sd(sz_3$pitch_mean)
 
-control <- subset(own, Diagnosis == "Control")
 
-hc_m <- mean(control$pitch_mean)
+#Make columns with mean and sd for SZ for study 4
+sz_4 <- subset(own, Diagnosis == "Schizophrenia" & Study == 4)
+sz4_m <- mean(sz_4$pitch_mean)
+sz4_sd <- sd(sz_4$pitch_mean)
 
 
-
-#Make columns with mean for SZ
-sz <- subset(own, Diagnosis == "Schizophrenia")
-sz_m <- mean(sz$pitch_mean)
-
-#Make columns with SD for control
-
-hc_sd <- sd(control$pitch_mean)
-
-#Make columns with SD for SZ
-
-sz_sd <- sd(sz$pitch_mean)
 
 # Add rows from own study to meta data
 
@@ -141,28 +174,80 @@ met2 <- met2 %>% add_row(StudyID = 51, Specification = "",
                                       Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
                                       Year_publication = 2019,
                  Article = "Fusorali et al.",
-                 SAMPLE_SIZE_HC = 116,
-                 SAMPLE_SIZE_SZ = 105,
+                 SAMPLE_SIZE_HC = nrow(control_1),
+                 SAMPLE_SIZE_SZ = nrow(sz_1),
                  TYPE_OF_TASK = NA,
-                 PITCH_F0_HC_M = 160.203973638763,
-                 PITCH_F0_HC_SD = 66.7811258178956,
-                 PITCH_F0_SZ_M = 154.231236543277,
-                 PITCH_F0_SZ_SD = 50.7700114945171,
-                 yi =NA, # The yi and vi values have not been calculated yet - just as random number
-                 vi = NA)  
+                 PITCH_F0_HC_M = hc1_m,
+                 PITCH_F0_HC_SD = hc1_sd,
+                 PITCH_F0_SZ_M = sz1_m,
+                 PITCH_F0_SZ_SD = sz1_sd,
+                 yi =NA, 
+                 vi = NA) 
+
+met2 <- met2 %>% add_row(StudyID = 52, Specification = "",   
+                                      Title = "Voice patterns in schizophrenia: A systematic review and Bayesian meta-analysis",   
+                                      Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
+                                      Year_publication = 2019,
+                 Article = "Fusorali et al.",
+                 SAMPLE_SIZE_HC = nrow(control_2),
+                 SAMPLE_SIZE_SZ = nrow(sz_2),
+                 TYPE_OF_TASK = NA,
+                 PITCH_F0_HC_M = hc2_m,
+                 PITCH_F0_HC_SD = hc2_sd,
+                 PITCH_F0_SZ_M = sz2_m,
+                 PITCH_F0_SZ_SD = sz2_sd,
+                 yi =NA, 
+                 vi = NA) 
+
+met2 <- met2 %>% add_row(StudyID = 53, Specification = "",   
+                                      Title = "Voice patterns in schizophrenia: A systematic review and Bayesian meta-analysis",   
+                                      Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
+                                      Year_publication = 2019,
+                 Article = "Fusorali et al.",
+                 SAMPLE_SIZE_HC = nrow(control_3),
+                 SAMPLE_SIZE_SZ = nrow(sz_3),
+                 TYPE_OF_TASK = NA,
+                 PITCH_F0_HC_M = hc3_m,
+                 PITCH_F0_HC_SD = hc3_sd,
+                 PITCH_F0_SZ_M = sz3_m,
+                 PITCH_F0_SZ_SD = sz3_sd,
+                 yi =NA, 
+                 vi = NA) 
+
+met2 <- met2 %>% add_row(StudyID = 54, Specification = "",   
+                                      Title = "Voice patterns in schizophrenia: A systematic review and Bayesian meta-analysis",   
+                                      Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
+                                      Year_publication = 2019,
+                 Article = "Fusorali et al.",
+                 SAMPLE_SIZE_HC = nrow(control_4),
+                 SAMPLE_SIZE_SZ = nrow(sz_4),
+                 TYPE_OF_TASK = NA,
+                 PITCH_F0_HC_M = hc4_m,
+                 PITCH_F0_HC_SD = hc4_sd,
+                 PITCH_F0_SZ_M = sz4_m,
+                 PITCH_F0_SZ_SD = sz4_sd,
+                 yi =NA, 
+                 vi = NA) 
 
 new_met <- escalc(measure = "SMD", n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i = PITCH_F0_HC_M, m2i = PITCH_F0_SZ_M, 
     sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = met2)
 
 
-# What if we have a fixed effect?
-mm <- lmer(yi ~ 1 + TYPE_OF_TASK+ (1 | StudyID), weights = 1/vi, data=new_met, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
-summary(mm)
+#
 
+# Mixed effects implementation 
+
+mm <- lmer(yi ~ 1 + (1 | StudyID), weights = 1/vi, data= new_met, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
+
+summary(mm)
 
 #Meta-analysis optimization: 
 new_m <-rma (yi, vi, data = new_met, slab = StudyID)
+summary(new_m)
 forest(new_m)
+
+
+
 
 
 
