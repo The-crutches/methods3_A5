@@ -54,7 +54,7 @@ meta
 met1 <-  escalc(measure = "SMD", n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i = PITCH_F0_HC_M, m2i = PITCH_F0_SZ_M, 
     sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = meta)
 
-# creating yi and vi for own data to insert with meta data - NOT DONE
+
 
 
 ```
@@ -83,6 +83,7 @@ summary(m)
 
 #Meta-analysis optimization: 
 m2 <-rma (yi, vi, data = met1, slab = StudyID)
+summary(m2)
 forest(m2)
 
 # What if we have a fixed effect?
@@ -92,6 +93,7 @@ summary(m3)
 
 met1$TYPE_OF_TASK <- as.factor(met1$TYPE_OF_TASK)
 m4 <- rma(yi, vi, mods = cbind(TYPE_OF_TASK), data = met1, slab=StudyID)
+summary(m4)
 forest(m4)
 
 ```
@@ -104,10 +106,10 @@ own <- read_csv("~/Uni stuff/Expmeth3/methods3_A3/SchizophreniaData.csv")
 
 
 
-met1 <- met1 %>% 
+met2 <- met1 %>% 
     select(c("StudyID":"Article", "SAMPLE_SIZE_HC": "SAMPLE_SIZE_SZ", "TYPE_OF_TASK", "PITCH_F0_HC_M":"PITCH_F0_SZ_SD", "yi", "vi"))
 
-data.frame(met1)
+data.frame(met2)
 
 
 #Make columns with mean for control
@@ -134,7 +136,7 @@ sz_sd <- sd(sz$pitch_mean)
 
 # Add rows from own study to meta data
 
-met1 <- met1 %>% add_row(StudyID = 51, Specification = "",   
+met2 <- met2 %>% add_row(StudyID = 51, Specification = "",   
                                       Title = "Voice patterns in schizophrenia: A systematic review and Bayesian meta-analysis",   
                                       Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
                                       Year_publication = 2019,
@@ -150,7 +152,7 @@ met1 <- met1 %>% add_row(StudyID = 51, Specification = "",
                  vi = NA)  
 
 new_met <- escalc(measure = "SMD", n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i = PITCH_F0_HC_M, m2i = PITCH_F0_SZ_M, 
-    sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = met1)
+    sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = met2)
 
 
 # What if we have a fixed effect?
