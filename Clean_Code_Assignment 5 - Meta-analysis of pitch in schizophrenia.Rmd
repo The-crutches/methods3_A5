@@ -38,7 +38,211 @@ Prisma chart: https://www.dropbox.com/s/vbjf6ff73dv9tru/PRISMA%202009%20flow%20d
 - Now look at the output of rma() and check tau and I2
 
 ```{r}
-pacman::p_load(readxl)
-data <- read_excel("Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx")
+#Loading packages
+pacman::p_load(tidyverse, metafor, readxl, lme4)
+
+#Loading data 
+meta <- read_excel("Matrix_MetaAnalysis_Diagnosis_updated290719.xlsx")
+
+#cleaning data 
+sub <- meta %>% select(StudyID:DIAGNOSIS, PITCH_F0_HC_M, PITCH_F0_SZ_M, PITCH_F0_HC_SD, PITCH_F0_SZ_SD, -Specification)
+
+  #Sarahs function
+delete.na <- function(DF, n=0) {
+  DF[rowSums(is.na(DF)) <= n,]
+}
+  #Deleting studies that we are not interested in
+sub <- delete.na(sub, 3)
+
+  #Merging clean and subsetted data
+meta_clean <- left_join(sub, meta)
+
+  #Choosing columns we are interested in 
+meta_clean <- meta_clean %>% select(StudyID:Article, SAMPLE_SIZE_HC:SAMPLE_SIZE_SZ, TYPE_OF_TASK, PITCH_F0_HC_M:PITCH_F0_SZ_SD)
+
 ```
+
+#Meta-analysis
+```{r}
+#Calculating effect size
+  #In the first step we use the escalc() function to calculate effect sizes and their variance.
+
+met1 <-  escalc(measure = "SMD", n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i = PITCH_F0_HC_M, m2i = PITCH_F0_SZ_M, 
+    sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = meta_clean)
+
+#Making models 
+
+# Mixed effects implementation 
+m <- lmer(yi ~ 1 + (1 | StudyID), weights = 1/vi, data= met1, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
+
+summary(m)
+
+#Meta-analysis optimization: 
+m2 <-rma (yi, vi, data = met1, slab = StudyID)
+
+#Results 
+summary(m2)
+forest(m2)
+
+#Influential studies
+inf <- influence(m2)
+print(inf)
+plot(inf)
+  #Seems like one study is an outliers 
+
+#Funnel plot
+funnel(m2)
+  #Funnel plot looks okay
+```
+#Meta-analysis with data from assignment 3 
+```{r}
+#Loading data from assignment 3 
+own <- read_csv("SchizophreniaData.csv")
+
+#Cleaning data for controls
+  #Make columns with mean and sd for control in study 1
+
+control_1 <- subset(own, Diagnosis == "Control" & Study == 1)
+
+hc1_m <- mean(control_1$pitch_mean)
+hc1_sd <- sd(control_1$pitch_mean)
+
+  #Make columns with mean and sd for control in study 2
+
+control_2 <- subset(own, Diagnosis == "Control" & Study == 2)
+
+hc2_m <- mean(control_2$pitch_mean)
+hc2_sd <- sd(control_2$pitch_mean)
+
+  #Make columns with mean and sd for control in study 3
+
+control_3 <- subset(own, Diagnosis == "Control" & Study == 3)
+
+hc3_m <- mean(control_3$pitch_mean)
+hc3_sd <- sd(control_3$pitch_mean)
+
+  #Make columns with mean and sd for control in study 4
+
+control_4 <- subset(own, Diagnosis == "Control" & Study == 4)
+
+hc4_m <- mean(control_4$pitch_mean)
+hc4_sd <- sd(control_4$pitch_mean)
+
+#Cleaning data for schizophrenia
+  #Make columns with mean and sd for SZ for study 1
+
+sz_1 <- subset(own, Diagnosis == "Schizophrenia" & Study == 1)
+sz1_m <- mean(sz_1$pitch_mean)
+sz1_sd <- sd(sz_1$pitch_mean)
+
+  #Make columns with mean and sd for SZ for study 2
+sz_2 <- subset(own, Diagnosis == "Schizophrenia" & Study == 2)
+sz2_m <- mean(sz_2$pitch_mean)
+sz2_sd <- sd(sz_2$pitch_mean)
+
+
+  #Make columns with mean and sd for SZ for study 3
+sz_3 <- subset(own, Diagnosis == "Schizophrenia" & Study == 3)
+sz3_m <- mean(sz_3$pitch_mean)
+sz3_sd <- sd(sz_3$pitch_mean)
+
+
+  #Make columns with mean and sd for SZ for study 4
+sz_4 <- subset(own, Diagnosis == "Schizophrenia" & Study == 4)
+sz4_m <- mean(sz_4$pitch_mean)
+sz4_sd <- sd(sz_4$pitch_mean)
+
+```
+```{r}
+#Making new dataframe with studies from assignment 3 
+
+met2 <- met1 %>% add_row(StudyID = 51,   
+                                      Title = "Voice patterns in schizophrenia: A systematic review and Bayesian meta-analysis",   
+                                      Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
+                                      Year_publication = 2019,
+                 Article = "Fusorali et al.",
+                 SAMPLE_SIZE_HC = nrow(control_1),
+                 SAMPLE_SIZE_SZ = nrow(sz_1),
+                 TYPE_OF_TASK = NA,
+                 PITCH_F0_HC_M = hc1_m,
+                 PITCH_F0_HC_SD = hc1_sd,
+                 PITCH_F0_SZ_M = sz1_m,
+                 PITCH_F0_SZ_SD = sz1_sd,
+                 yi =NA, 
+                 vi = NA) 
+
+met2 <- met2 %>% add_row(StudyID = 52,   
+                                      Title = "Voice patterns in schizophrenia: A systematic review and Bayesian meta-analysis",   
+                                      Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
+                                      Year_publication = 2019,
+                 Article = "Fusorali et al.",
+                 SAMPLE_SIZE_HC = nrow(control_2),
+                 SAMPLE_SIZE_SZ = nrow(sz_2),
+                 TYPE_OF_TASK = NA,
+                 PITCH_F0_HC_M = hc2_m,
+                 PITCH_F0_HC_SD = hc2_sd,
+                 PITCH_F0_SZ_M = sz2_m,
+                 PITCH_F0_SZ_SD = sz2_sd,
+                 yi =NA, 
+                 vi = NA) 
+
+met2 <- met2 %>% add_row(StudyID = 53,   
+                                      Title = "Voice patterns in schizophrenia: A systematic review and Bayesian meta-analysis",   
+                                      Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
+                                      Year_publication = 2019,
+                 Article = "Fusorali et al.",
+                 SAMPLE_SIZE_HC = nrow(control_3),
+                 SAMPLE_SIZE_SZ = nrow(sz_3),
+                 TYPE_OF_TASK = NA,
+                 PITCH_F0_HC_M = hc3_m,
+                 PITCH_F0_HC_SD = hc3_sd,
+                 PITCH_F0_SZ_M = sz3_m,
+                 PITCH_F0_SZ_SD = sz3_sd,
+                 yi =NA, 
+                 vi = NA) 
+
+met2 <- met2 %>% add_row(StudyID = 54,    
+                                      Title = "Voice patterns in schizophrenia: A systematic review and Bayesian meta-analysis",   
+                                      Authors = "Parola, A., Simonsen, A., Bliksted, V., & Fusaroli, R.",    
+                                      Year_publication = 2019,
+                 Article = "Fusorali et al.",
+                 SAMPLE_SIZE_HC = nrow(control_4),
+                 SAMPLE_SIZE_SZ = nrow(sz_4),
+                 TYPE_OF_TASK = NA,
+                 PITCH_F0_HC_M = hc4_m,
+                 PITCH_F0_HC_SD = hc4_sd,
+                 PITCH_F0_SZ_M = sz4_m,
+                 PITCH_F0_SZ_SD = sz4_sd,
+                 yi =NA, 
+                 vi = NA)
+```
+
+```{r}
+#Calculating effect size 
+
+new_met <- escalc(measure = "SMD", n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i = PITCH_F0_HC_M, m2i = PITCH_F0_SZ_M, 
+    sd1i = PITCH_F0_HC_SD, sd2i = PITCH_F0_SZ_SD, data = met2)
+
+#Mixed effects implementation 
+
+m_tot <- lmer(yi ~ 1 + (1 | StudyID), weights = 1/vi, data= new_met, control=lmerControl(check.nobs.vs.nlev="ignore", check.nobs.vs.nRE="ignore"))
+
+summary(m_tot)
+
+#Meta-analysis optimization: 
+m_tot2 <-rma (yi, vi, data = new_met, slab = StudyID)
+
+#Results 
+summary(m_tot2)
+forest(m_tot2)
+
+#Influential studies
+inf_tot <- influence(m_tot2)
+print(inf_tot)
+plot(inf_tot)
+
+#Funnel plot
+funnel(m_tot2)
+```
+
 
