@@ -38,6 +38,7 @@ Prisma chart: https://www.dropbox.com/s/vbjf6ff73dv9tru/PRISMA%202009%20flow%20d
 - Now look at the output of rma() and check tau and I2
 
 ```{r}
+#Kristine
 #Loading packages
 pacman::p_load(tidyverse, metafor, readxl, lme4)
 
@@ -64,6 +65,7 @@ meta_clean <- meta_clean %>% select(StudyID:Article, SAMPLE_SIZE_HC:SAMPLE_SIZE_
 
 #Meta-analysis
 ```{r}
+#Nanna
 #Calculating effect size
   #In the first step we use the escalc() function to calculate effect sizes and their variance.
 
@@ -96,6 +98,7 @@ funnel(m2)
 ```
 #Meta-analysis with data from assignment 3 
 ```{r}
+#Sarah
 #Loading data from assignment 3 
 own <- read_csv("SchizophreniaData.csv")
 
@@ -154,6 +157,7 @@ sz4_sd <- sd(sz_4$pitch_mean)
 
 ```
 ```{r}
+#Julie
 #Making new dataframe with studies from assignment 3 
 
 met2 <- met1 %>% add_row(StudyID = 51,   
@@ -218,6 +222,7 @@ met2 <- met2 %>% add_row(StudyID = 54,
 ```
 
 ```{r}
+#Martine
 #Calculating effect size 
 
 new_met <- escalc(measure = "SMD", n1i = SAMPLE_SIZE_HC, n2i = SAMPLE_SIZE_SZ, m1i = PITCH_F0_HC_M, m2i = PITCH_F0_SZ_M, 
